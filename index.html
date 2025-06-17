@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Resolver Desigualdades</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -25,11 +26,14 @@
       background: #fff;
       border-left: 4px solid #007acc;
     }
+    #grafico {
+      margin-top: 30px;
+    }
   </style>
 </head>
 <body>
 
-  <h1>Resolución de Desigualdades Lineales y Cuadráticas</h1>
+  <h1>Resolución de Desigualdades con Gráfica</h1>
 
   <label>Tipo de Desigualdad:</label>
   <select id="tipo">
@@ -38,13 +42,13 @@
   </select>
 
   <label>Coeficiente a:</label>
-  <input type="number" id="a">
+  <input type="number" id="a" value="1">
 
   <label>Coeficiente b:</label>
-  <input type="number" id="b">
+  <input type="number" id="b" value="0">
 
   <label>Coeficiente c:</label>
-  <input type="number" id="c">
+  <input type="number" id="c" value="0">
 
   <label>Operador:</label>
   <select id="operador">
@@ -58,6 +62,8 @@
 
   <div id="resultado" class="resultado"></div>
 
+  <div id="grafico"></div>
+
   <script>
     function resolver() {
       const tipo = document.getElementById("tipo").value;
@@ -66,36 +72,46 @@
       const c = parseFloat(document.getElementById("c").value);
       const op = document.getElementById("operador").value;
       let resultado = "";
+      let xVals = [];
+      let yVals = [];
 
+      // Rango de x para graficar
+      for (let x = -20; x <= 20; x += 0.1) {
+        xVals.push(x);
+        if (tipo === "lineal") {
+          yVals.push(a * x + b);
+        } else {
+          yVals.push(a * x * x + b * x + c);
+        }
+      }
+
+      // Resolver la desigualdad
       if (tipo === "lineal") {
-        // Resolver ax + b < c
-        const rhs = c - b;
-        const x = rhs / a;
+        const rhs = c;
+        const xSol = (rhs - b) / a;
         if (a === 0) {
           resultado = (eval(`0 ${op} ${rhs}`)) ? "Todos los reales" : "No hay solución";
         } else {
           let dir = a > 0 ? op : invert(op);
-          resultado = `Solución: x ${dir} ${x.toFixed(2)}`;
+          resultado = `Solución: x ${dir} ${xSol.toFixed(2)}`;
         }
       }
 
       if (tipo === "cuadratica") {
-        // Resolver ax² + bx + c < 0
-        const discriminante = b * b - 4 * a * c;
-
+        const disc = b * b - 4 * a * c;
         if (a === 0) {
           resultado = "No es una desigualdad cuadrática (a = 0)";
-        } else if (discriminante < 0) {
+        } else if (disc < 0) {
           resultado = (a > 0 && (op === "<" || op === "<=")) || (a < 0 && (op === ">" || op === ">="))
             ? "Solución: Todos los reales"
             : "No hay solución real";
         } else {
-          const x1 = (-b - Math.sqrt(discriminante)) / (2 * a);
-          const x2 = (-b + Math.sqrt(discriminante)) / (2 * a);
+          const x1 = (-b - Math.sqrt(disc)) / (2 * a);
+          const x2 = (-b + Math.sqrt(disc)) / (2 * a);
           const [min, max] = [Math.min(x1, x2), Math.max(x1, x2)];
 
           if (op === "<") {
-            resultado = a > 0 ? `Solución: x ∈ (${min.toFixed(2)}, ${max.toFixed(2)})`
+            resultado = a > 0 ? `x ∈ (${min.toFixed(2)}, ${max.toFixed(2)})`
                               : `x ∈ (-∞, ${min.toFixed(2)}) ∪ (${max.toFixed(2)}, ∞)`;
           } else if (op === "<=") {
             resultado = a > 0 ? `x ∈ [${min.toFixed(2)}, ${max.toFixed(2)}]`
@@ -111,6 +127,24 @@
       }
 
       document.getElementById("resultado").innerText = resultado;
+
+      // Mostrar la gráfica
+      const trace = {
+        x: xVals,
+        y: yVals,
+        mode: 'lines',
+        name: 'Función',
+        line: { color: 'blue' }
+      };
+
+      const layout = {
+        title: tipo === "lineal" ? 'Gráfica Lineal' : 'Gráfica Cuadrática',
+        xaxis: { title: 'x', zeroline: true },
+        yaxis: { title: 'f(x)', zeroline: true },
+        margin: { t: 40 }
+      };
+
+      Plotly.newPlot('grafico', [trace], layout);
     }
 
     function invert(op) {
@@ -123,5 +157,6 @@
       }
     }
   </script>
+
 </body>
 </html>
