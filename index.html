@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Resolver Desigualdades</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      background: #f0f0f0;
+    }
+    h1 {
+      color: #333;
+    }
+    input, select, button {
+      margin: 10px 0;
+      padding: 8px;
+      width: 100%;
+      max-width: 400px;
+      font-size: 16px;
+    }
+    .resultado {
+      margin-top: 20px;
+      padding: 15px;
+      background: #fff;
+      border-left: 4px solid #007acc;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Resolución de Desigualdades Lineales y Cuadráticas</h1>
+
+  <label>Tipo de Desigualdad:</label>
+  <select id="tipo">
+    <option value="lineal">Lineal (ax + b &lt; c)</option>
+    <option value="cuadratica">Cuadrática (ax² + bx + c &lt; 0)</option>
+  </select>
+
+  <label>Coeficiente a:</label>
+  <input type="number" id="a">
+
+  <label>Coeficiente b:</label>
+  <input type="number" id="b">
+
+  <label>Coeficiente c:</label>
+  <input type="number" id="c">
+
+  <label>Operador:</label>
+  <select id="operador">
+    <option value="<">&lt;</option>
+    <option value="<=">&le;</option>
+    <option value=">">&gt;</option>
+    <option value=">=">&ge;</option>
+  </select>
+
+  <button onclick="resolver()">Resolver</button>
+
+  <div id="resultado" class="resultado"></div>
+
+  <script>
+    function resolver() {
+      const tipo = document.getElementById("tipo").value;
+      const a = parseFloat(document.getElementById("a").value);
+      const b = parseFloat(document.getElementById("b").value);
+      const c = parseFloat(document.getElementById("c").value);
+      const op = document.getElementById("operador").value;
+      let resultado = "";
+
+      if (tipo === "lineal") {
+        // Resolver ax + b < c
+        const rhs = c - b;
+        const x = rhs / a;
+        if (a === 0) {
+          resultado = (eval(`0 ${op} ${rhs}`)) ? "Todos los reales" : "No hay solución";
+        } else {
+          let dir = a > 0 ? op : invert(op);
+          resultado = `Solución: x ${dir} ${x.toFixed(2)}`;
+        }
+      }
+
+      if (tipo === "cuadratica") {
+        // Resolver ax² + bx + c < 0
+        const discriminante = b * b - 4 * a * c;
+
+        if (a === 0) {
+          resultado = "No es una desigualdad cuadrática (a = 0)";
+        } else if (discriminante < 0) {
+          resultado = (a > 0 && (op === "<" || op === "<=")) || (a < 0 && (op === ">" || op === ">="))
+            ? "Solución: Todos los reales"
+            : "No hay solución real";
+        } else {
+          const x1 = (-b - Math.sqrt(discriminante)) / (2 * a);
+          const x2 = (-b + Math.sqrt(discriminante)) / (2 * a);
+          const [min, max] = [Math.min(x1, x2), Math.max(x1, x2)];
+
+          if (op === "<") {
+            resultado = a > 0 ? `Solución: x ∈ (${min.toFixed(2)}, ${max.toFixed(2)})`
+                              : `x ∈ (-∞, ${min.toFixed(2)}) ∪ (${max.toFixed(2)}, ∞)`;
+          } else if (op === "<=") {
+            resultado = a > 0 ? `x ∈ [${min.toFixed(2)}, ${max.toFixed(2)}]`
+                              : `x ∈ (-∞, ${min.toFixed(2)}] ∪ [${max.toFixed(2)}, ∞)`;
+          } else if (op === ">") {
+            resultado = a < 0 ? `x ∈ (${min.toFixed(2)}, ${max.toFixed(2)})`
+                              : `x ∈ (-∞, ${min.toFixed(2)}) ∪ (${max.toFixed(2)}, ∞)`;
+          } else if (op === ">=") {
+            resultado = a < 0 ? `x ∈ [${min.toFixed(2)}, ${max.toFixed(2)}]`
+                              : `x ∈ (-∞, ${min.toFixed(2)}] ∪ [${max.toFixed(2)}, ∞)`;
+          }
+        }
+      }
+
+      document.getElementById("resultado").innerText = resultado;
+    }
+
+    function invert(op) {
+      switch (op) {
+        case "<": return ">";
+        case ">": return "<";
+        case "<=": return ">=";
+        case ">=": return "<=";
+        default: return op;
+      }
+    }
+  </script>
+</body>
+</html>
